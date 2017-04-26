@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools">
+
+    <data >
+
+        <variable
+            name="task"
+            type="com.congxiaoyao.httplib.response.TaskRsp" />
+
+        <variable
+            name="format"
+            type="java.text.SimpleDateFormat" />
+
+        <variable
+            name="presenter"
+            type="com.congxiaoyao.xber_driver.main.TravelFragment.Presenter" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.congxiaoyao.xber_driver.widget.XberDividerLayout
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:background="#ffffff"
+            app:divider_bottom="true"
+            app:divider_top="true"
+            app:divider_size="2px"
+            app:divider_color="#eaeaea"
+            android:elevation="2dp"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingLeft="8dp"
+                    android:paddingTop="8dp"
+                    android:id="@+id/ll_container"
+                    android:background="#ffffff"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:src="@drawable/icon_location_start"
+                        android:scaleType="center"
+                        android:layout_height="32dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textColor="@color/colorBlack"
+                        android:text="@{task.startSpot.spotName}"
+                        tool:text="天津理工大学" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingLeft="8dp"
+                    android:id="@+id/goal"
+                    android:layout_below="@id/ll_container"
+                    android:paddingBottom="8dp"
+                    android:background="#ffffff"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:src="@drawable/icon_location_goal"
+                        android:scaleType="center"
+                        android:layout_height="32dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:textColor="@color/colorBlack"
+                        android:text="@{task.endSpot.spotName}"
+                        tool:text="北京天安门" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:tint="#666666"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="8dp"
+                    android:src="@drawable/ic_arrow_right" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@+id/goal"
+                    android:onClick="@{presenter.onTaskDetailClick}"
+                    android:clickable="true"
+                    android:background="?android:attr/selectableItemBackground"/>
+            </RelativeLayout>
+
+            <LinearLayout
+                android:background="#fafafa"
+                android:layout_width="match_parent"
+                app:divider_top="true"
+                android:orientation="horizontal"
+                android:paddingLeft="32dp"
+                android:layout_height="32dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:src="@drawable/ic_time"
+                    android:tint="#888888"
+                    android:layout_gravity="center"
+                    android:scaleType="fitXY"
+                    android:layout_marginRight="4dp"
+                    android:layout_height="16dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textColor="@color/colorBlack"
+                    android:id="@+id/tv_time"
+                    android:text="@{format.format(task.endTime) + `前完成`}"
+                    tool:text="2017年10月5日前完成" />
+            </LinearLayout>
+        </com.congxiaoyao.xber_driver.widget.XberDividerLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="开 始 行 程"
+            android:background="@drawable/shape_btn_blue"
+            android:textColor="#ffffff"
+            android:layout_gravity="bottom"
+            android:layout_margin="8dp"
+            android:onClick="@{presenter.onStartTravelClick}"
+            android:layout_alignParentBottom="true"/>
+
+    </FrameLayout>
+</layout>

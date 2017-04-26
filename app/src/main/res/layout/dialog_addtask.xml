@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data >
+
+        <variable
+            name="presenter"
+            type="com.congxiaoyao.xber_driver.simulatepost.SimulatePostActivity.Presenter" />
+
+        <variable
+            name="driverName"
+            type="java.lang.String" />
+        <variable
+            name="carId"
+            type="java.lang.String" />
+        <variable
+            name="carDetail"
+            type="com.congxiaoyao.httplib.response.CarDetail" />
+    </data>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:padding="8dp"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:id="@+id/tv_driver_name"
+            android:tag="@{carDetail}"
+            android:text="@{driverName}"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#555555"
+            android:paddingBottom="8dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="目的地:"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#555555"
+            android:paddingBottom="8dp"/>
+
+        <RadioGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/radio_group">
+
+            <!--<RadioButton-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:tag="5"-->
+                <!--android:text="济南" />-->
+
+            <!--<RadioButton-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:tag="7"-->
+                <!--android:text="青岛" />-->
+        </RadioGroup>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="@{presenter.onPushTask}"
+            android:id="@+id/push_button"
+            android:text="发布" />
+    </LinearLayout>
+</layout>

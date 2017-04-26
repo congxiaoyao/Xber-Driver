@@ -1,0 +1,3 @@
+include ':app', ':httplib', ':locationcommonlib'
+include ':stomplib'
+project(':stomplib').projectDir = new File('../StompTest/stopmlib')

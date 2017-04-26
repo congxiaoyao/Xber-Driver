@@ -1,0 +1,184 @@
+package com.congxiaoyao.stopmlib;
+
+import android.util.Log;
+
+import org.java_websocket.WebSocket;
+import org.java_websocket.client.DefaultSSLWebSocketClientFactory;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft_17;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ServerHandshake;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import javax.net.ssl.SSLContext;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.functions.Action0;
+
+/**
+ * Created by naik on 05.05.16.
+ */
+public class WebSocketsConnectionProvider implements ConnectionProvider {
+
+    private static final String TAG = WebSocketsConnectionProvider.class.getSimpleName();
+
+    private final String mUri;
+    private final Map<String, String> mConnectHttpHeaders;
+    private WebSocketClient mWebSocketClient;
+    private List<Subscriber<? super LifecycleEvent>> mLifecycleSubscribers;
+    private List<Subscriber<? super String>> mMessagesSubscribers;
+    private boolean haveConnection;
+    private TreeMap<String, String> mServerHandshakeHeaders;
+
+    /**
+     * Support UIR scheme ws://host:port/path
+     * @param connectHttpHeaders may be null
+     */
+    public WebSocketsConnectionProvider(String uri, Map<String, String> connectHttpHeaders) {
+        mUri = uri;
+        mConnectHttpHeaders = connectHttpHeaders != null ? connectHttpHeaders :
+                new HashMap<String, String>();
+        mLifecycleSubscribers = new ArrayList<>();
+        mMessagesSubscribers = new ArrayList<>();
+    }
+
+    @Override
+    public Observable<String> messages() {
+        Observable<String> observable = Observable.<String>create(new Observable.OnSubscribe<String>() {
+            @Override
+            public void call(Subscriber<? super String> subscriber) {
+                mMessagesSubscribers.add(subscriber);
+            }
+        }).doOnUnsubscribe(new Action0() {
+            @Override
+            public void call() {
+                Iterator<Subscriber<? super String>> iterator = mMessagesSubscribers.iterator();
+                while (iterator.hasNext()) {
+                    if (iterator.next().isUnsubscribed()) iterator.remove();
+                }
+
+                if (mMessagesSubscribers.size() < 1) mWebSocketClient.close();
+            }
+        });
+
+        createWebSocketConnection();
+        return observable;
+    }
+
+    private void createWebSocketConnection() {
+        if (haveConnection)
+            throw new IllegalStateException("Already have connection to web socket");
+
+        mWebSocketClient = new WebSocketClient(URI.create(mUri), new Draft_17(), mConnectHttpHeaders, 0) {
+
+            @Override
+            public void onWebsocketHandshakeReceivedAsClient(WebSocket conn, ClientHandshake request, ServerHandshake response) throws InvalidDataException {
+                Log.d(TAG, "onWebsocketHandshakeReceivedAsClient with response: " + response.getHttpStatus() + " " + response.getHttpStatusMessage());
+                mServerHandshakeHeaders = new TreeMap<>();
+                Iterator<String> keys = response.iterateHttpFields();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    String value = response.getFieldValue(key);
+                    Log.d(TAG, "onWebsocketHandshakeReceivedAsClient: key = " + key + " value = " + value);
+                    mServerHandshakeHeaders.put(key, value);
+                }
+            }
+
+            @Override
+            public void onOpen(ServerHandshake handshakeData) {
+                Log.d(TAG, "onOpen with handshakeData: " + handshakeData.getHttpStatus() + " " + handshakeData.getHttpStatusMessage());
+                LifecycleEvent openEvent = new LifecycleEvent(LifecycleEvent.Type.OPENED);
+                openEvent.setHandshakeResponseHeaders(mServerHandshakeHeaders);
+                emitLifecycleEvent(openEvent);
+            }
+
+            @Override
+            public void onMessage(String message) {
+                Log.d(TAG, "onMessage: " + message);
+                emitMessage(message);
+            }
+
+            @Override
+            public void onClose(int code, String reason, boolean remote) {
+                Log.d(TAG, "onClose: code=" + code + " reason=" + reason + " remote=" + remote);
+                haveConnection = false;
+                emitLifecycleEvent(new LifecycleEvent(LifecycleEvent.Type.CLOSED));
+            }
+
+            @Override
+            public void onError(Exception ex) {
+                Log.e(TAG, "onError", ex);
+                emitLifecycleEvent(new LifecycleEvent(LifecycleEvent.Type.ERROR, ex));
+            }
+        };
+
+        if(mUri.startsWith("wss")) {
+            try {
+                SSLContext sc = SSLContext.getInstance("TLS");
+                sc.init(null, null, null);
+                mWebSocketClient.setWebSocketFactory(new DefaultSSLWebSocketClientFactory(sc));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        mWebSocketClient.connect();
+        haveConnection = true;
+    }
+
+    @Override
+    public Observable<Void> send(final String stompMessage) {
+        return Observable.create(new Observable.OnSubscribe<Void>() {
+            @Override
+            public void call(Subscriber<? super Void> subscriber) {
+                if (mWebSocketClient == null) {
+                    subscriber.onError(new IllegalStateException("Not connected yet"));
+                } else {
+                    mWebSocketClient.send(stompMessage);
+                    subscriber.onCompleted();
+                }
+            }
+        });
+    }
+
+    private void emitLifecycleEvent(LifecycleEvent lifecycleEvent) {
+        Log.d(TAG, "Emit lifecycle event: " + lifecycleEvent.getType().name());
+        for (Subscriber<? super LifecycleEvent> subscriber : mLifecycleSubscribers) {
+            subscriber.onNext(lifecycleEvent);
+        }
+    }
+
+    private void emitMessage(String stompMessage) {
+        Log.d(TAG, "Emit STOMP message: " + stompMessage);
+        for (Subscriber<? super String> subscriber : mMessagesSubscribers) {
+            subscriber.onNext(stompMessage);
+        }
+    }
+
+    @Override
+    public Observable<LifecycleEvent> getLifecycleReceiver() {
+        return Observable.create(new Observable.OnSubscribe<LifecycleEvent>() {
+            @Override
+            public void call(Subscriber<? super LifecycleEvent> subscriber) {
+                mLifecycleSubscribers.add(subscriber);
+            }
+        }).doOnUnsubscribe(new Action0() {
+            @Override
+            public void call() {
+                Iterator<Subscriber<? super LifecycleEvent>> iterator = mLifecycleSubscribers.iterator();
+                while (iterator.hasNext()) {
+                    if (iterator.next().isUnsubscribed()) iterator.remove();
+                }
+            }
+        });
+    }
+}

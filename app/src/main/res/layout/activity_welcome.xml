@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data >
+
+        <variable
+            name="presenter"
+            type="com.congxiaoyao.xber_driver.WelcomeActivity.Presenter" />
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_welcome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.congxiaoyao.xber_driver.WelcomeActivity">
+
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="128dp"
+            android:id="@+id/img_logo"
+            android:src="@drawable/logo_large" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/colorBlack"
+            android:textSize="24sp"
+            android:id="@+id/tv_title"
+            android:layout_marginTop="16dp"
+            android:layout_below="@id/img_logo"
+            android:text="Xber司机端" />
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:id="@+id/ll_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/btn_back"
+                android:theme="@style/MyButton"
+                android:text="登 陆"
+                android:textSize="16sp"
+                android:onClick="@{presenter.onLoginClick}"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="56dp" />
+
+            <Button
+                android:id="@+id/btn_next"
+                android:theme="@style/MyButton"
+                android:text="注 册"
+                android:textSize="16sp"
+                android:onClick="@{presenter.onRegisterClick}"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="56dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/tv_title"
+            android:gravity="center"
+            android:textColor="@color/colorBlack"
+            android:text="created by 丛圣杰"
+            android:layout_above="@id/ll_container" />
+
+
+    </RelativeLayout>
+</layout>

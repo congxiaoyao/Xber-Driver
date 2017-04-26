@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <dbname value="xber_driver_db" ></dbname>
+
+    <version value="1" ></version>
+
+    <list>
+        <mapping class="com.congxiaoyao.xber_driver.simulatepost.UploadState" />
+    </list>
+</litepal>
