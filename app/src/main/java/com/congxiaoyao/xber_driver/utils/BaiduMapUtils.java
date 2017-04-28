@@ -54,6 +54,7 @@ public class BaiduMapUtils {
     }
 
     public static void moveToLatLng(BaiduMap map, double lat, double lng, int zoom, boolean animate) {
+        if (map == null) return;
         if (animate) {
             moveToLatLng(map, lat, lng, zoom);
             return;
@@ -66,6 +67,7 @@ public class BaiduMapUtils {
     }
 
     public static void moveToLatLng(BaiduMap map, double lat, double lng, int zoom) {
+        if (map == null) return;
         MapStatus mMapStatus = new MapStatus.Builder()
                 .target(new LatLng(lat, lng))
                 .zoom(zoom)
@@ -76,6 +78,15 @@ public class BaiduMapUtils {
 
     public static void moveToLatLng(BaiduMap map, double lat, double lng) {
         moveToLatLng(map, lat, lng, 16);
+    }
+
+    public static void moveToLatLngWithoutZoom(BaiduMap map, double lat, double lng) {
+        if (map == null) return;
+        MapStatus mMapStatus = new MapStatus.Builder()
+                .target(new LatLng(lat, lng))
+                .build();
+        MapStatusUpdate mMapStatusUpdate = MapStatusUpdateFactory.newMapStatus(mMapStatus);
+        map.animateMapStatus(mMapStatusUpdate);
     }
 
     public static void moveToPoint(BaiduMap map, Point point) {

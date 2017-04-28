@@ -5,6 +5,8 @@ import com.congxiaoyao.httplib.request.retrofit2.adapter.rxjava.HttpException;
 import com.congxiaoyao.httplib.response.ErrorInfo;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
@@ -62,8 +64,8 @@ public class ExceptionDispatcher {
             return;
         }
 
-        //如果未知域名错误
-        else if (throwable instanceof UnknownHostException) {
+        //如果各种其他网络问题连不上
+        else if (throwable instanceof UnknownHostException ) {
             boolean handled = exceptionHandler.onUnknowHostError((UnknownHostException) throwable);
             if (!handled) {
                 exceptionHandler.onNetworkError(new NetWorkException(throwable.getMessage()));
@@ -71,8 +73,11 @@ public class ExceptionDispatcher {
             return;
         }
 
-        if (throwable instanceof NetWorkException) {
-            exceptionHandler.onNetworkError((NetWorkException) throwable);
+        //如果各种其他网络问题连不上
+        if (throwable instanceof NetWorkException ||
+                throwable instanceof SocketException ||
+                throwable instanceof ConnectException) {
+            exceptionHandler.onNetworkError(new NetWorkException(throwable.getMessage()));
             return;
         }
 

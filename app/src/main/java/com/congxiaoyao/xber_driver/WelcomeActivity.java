@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.baidu.mapapi.SDKInitializer;
 import com.congxiaoyao.xber_driver.databinding.ActivityWelcomeBinding;
 import com.congxiaoyao.xber_driver.login.LoginActivity;
 import com.congxiaoyao.xber_driver.main.MainActivity;
@@ -29,6 +30,7 @@ public class WelcomeActivity extends AppCompatActivity {
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
+            SDKInitializer.initialize(getApplicationContext());
             startActivity(new Intent(WelcomeActivity.this, MainActivity.class));
             finish();
             overridePendingTransition(0, 0);
@@ -71,7 +73,7 @@ public class WelcomeActivity extends AppCompatActivity {
     }
 
     private void delayAndJump() {
-        binding.llContainer.postDelayed(runnable, 1000);
+        binding.llContainer.postDelayed(runnable, 500);
     }
 
     private void fitSystemBarTextColor() {

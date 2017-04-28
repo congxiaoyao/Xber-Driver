@@ -1,12 +1,8 @@
 package com.congxiaoyao.xber_driver.main;
 
-import android.content.Intent;
 import android.databinding.DataBindingUtil;
-import android.support.transition.TransitionManager;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.transition.TransitionInflater;
+import android.support.transition.TransitionManager;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -26,12 +22,13 @@ import com.congxiaoyao.xber_driver.utils.Token;
 
 import java.text.SimpleDateFormat;
 
+import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.schedulers.Schedulers;
 
-public class CurrentTaskActivity extends AppCompatActivity {
+public class CurrentTaskActivity extends SwipeBackActivity {
 
     private SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日 HH点mm分");
     public ActivityCurrentTaskBinding binding;

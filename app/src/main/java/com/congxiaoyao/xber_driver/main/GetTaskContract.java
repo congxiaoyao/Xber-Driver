@@ -16,9 +16,13 @@ public interface GetTaskContract {
 
         Driver getDriver();
 
-        LoadingLayout getLoadingLayout();
-
         void showTask(TaskRsp taskRsp);
+
+        void showReload();
+
+        void showNoTask();
+
+        void clearViews();
     }
 
 

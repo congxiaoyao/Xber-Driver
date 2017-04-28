@@ -8,11 +8,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.congxiaoyao.httplib.request.gson.GsonHelper;
 import com.congxiaoyao.httplib.response.TaskRsp;
 import com.congxiaoyao.xber_driver.R;
 import com.congxiaoyao.xber_driver.databinding.FragmentTravelBinding;
+import com.congxiaoyao.xber_driver.location.LocationService;
 
 import java.text.SimpleDateFormat;
 
@@ -22,6 +24,7 @@ public class TravelFragment extends Fragment {
     private SimpleDateFormat format = new SimpleDateFormat("yyyy年MM月dd日");
     private FragmentTravelBinding binding;
     private String json;
+    private TaskRsp taskRsp;
 
     public static TravelFragment getInstance(TaskRsp taskRsp) {
         TravelFragment fragment = new TravelFragment();
@@ -35,7 +38,7 @@ public class TravelFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         json = getArguments().getString(KEY_TASK_RSP);
-        TaskRsp taskRsp = GsonHelper.getInstance().fromJson(json, TaskRsp.class);
+        taskRsp = GsonHelper.getInstance().fromJson(json, TaskRsp.class);
         binding = DataBindingUtil.inflate(getLayoutInflater(savedInstanceState),
                 R.layout.fragment_travel, container, false);
 
@@ -48,7 +51,8 @@ public class TravelFragment extends Fragment {
     public class Presenter {
 
         public void onStartTravelClick(View view) {
-
+            LocationService.startServiceForUpload(getContext(), taskRsp.getTaskId());
+            ((TextView) view).setText("结束此任务");
         }
 
         public void onTaskDetailClick(View view) {

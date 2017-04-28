@@ -21,7 +21,7 @@ import rx.schedulers.Schedulers;
 public class GetTaskPresenter extends BasePresenterImpl<GetTaskContract.View>
         implements GetTaskContract.Presenter {
 
-    public GetTaskPresenter(MainActivity view) {
+    public GetTaskPresenter(GetTaskContract.View view) {
         super(view);
     }
 
@@ -31,6 +31,7 @@ public class GetTaskPresenter extends BasePresenterImpl<GetTaskContract.View>
 
     @Override
     public void subscribe() {
+        view.clearViews();
         Observable<TaskListRsp> executing = XberRetrofit.getRetrofit().create(TaskRequest.class)
                 .getTask(view.getDriver().getUserId(), 0, 1, Task.STATUS_EXECUTING,
                         null, null, Token.value);
@@ -64,7 +65,7 @@ public class GetTaskPresenter extends BasePresenterImpl<GetTaskContract.View>
                     @Override
                     public void call(TaskListRsp taskListRsp) {
                         if (taskListRsp.getCurrentPageData().size() == 0) {
-                            showNoTask();
+                            view.showNoTask();
                         }else {
                             view.showTask(taskListRsp.getTaskList().get(0));
                         }
@@ -78,10 +79,9 @@ public class GetTaskPresenter extends BasePresenterImpl<GetTaskContract.View>
         subscriptions.add(subscribe);
     }
 
-    public void showNoTask() {
-        view.hideLoading();
-        LayoutInflater.from(this.view.getContext())
-                .inflate(R.layout.view_no_task, view.getLoadingLayout(), true);
-
+    @Override
+    public void onDispatchException(Throwable throwable) {
+        super.onDispatchException(throwable);
+        view.showReload();
     }
 }

@@ -11,11 +11,16 @@ import com.congxiaoyao.httplib.request.gson.GsonHelper;
 
 public class Driver {
 
+    private long carId;
     private long userId;
     private String userName;
     private String password;
-
     private String nickName;
+
+    private String plate;
+    private String spec;
+    private Byte gender;
+    private int age;
 
     private String token;
 
@@ -28,6 +33,14 @@ public class Driver {
 
     public Driver() {
 
+    }
+
+    public long getCarId() {
+        return carId;
+    }
+
+    public void setCarId(long carId) {
+        this.carId = carId;
     }
 
     public String getUserName() {
@@ -101,8 +114,41 @@ public class Driver {
                 ", password='" + password + '\'' +
                 ", nickName='" + nickName + '\'' +
                 ", userId='" + userId + '\'' +
+                ", carId='" + carId + '\'' +
                 ", token='" + token + '\'' +
                 '}';
+    }
+
+    public String getPlate() {
+        return plate;
+    }
+
+    public void setPlate(String plate) {
+        this.plate = plate;
+    }
+
+    public String getSpec() {
+        return spec;
+    }
+
+    public void setSpec(String spec) {
+        this.spec = spec;
+    }
+
+    public Byte getGender() {
+        return gender;
+    }
+
+    public void setGender(Byte gender) {
+        this.gender = gender;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
     }
 }
 

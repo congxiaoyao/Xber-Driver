@@ -1,6 +1,7 @@
 package com.congxiaoyao.xber_driver.login;
 
 import android.content.Context;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.PorterDuff;
 import android.os.Bundle;

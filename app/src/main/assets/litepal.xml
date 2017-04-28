@@ -2,9 +2,10 @@
 <litepal>
     <dbname value="xber_driver_db" ></dbname>
 
-    <version value="1" ></version>
+    <version value="2" ></version>
 
     <list>
         <mapping class="com.congxiaoyao.xber_driver.simulatepost.UploadState" />
+        <mapping class="com.congxiaoyao.xber_driver.location.Position" />
     </list>
 </litepal>

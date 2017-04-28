@@ -140,6 +140,7 @@
             android:textColor="#ffffff"
             android:layout_gravity="bottom"
             android:layout_margin="8dp"
+            android:textSize="15sp"
             android:onClick="@{presenter.onStartTravelClick}"
             android:layout_alignParentBottom="true"/>
 

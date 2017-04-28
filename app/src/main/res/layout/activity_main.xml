@@ -45,11 +45,43 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
+            <View
+                android:id="@+id/view_holder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#ffffff" />
+
             <FrameLayout
                 android:layout_width="match_parent"
                 android:id="@+id/ff_container"
                 android:layout_height="match_parent">
             </FrameLayout>
+
+            <ToggleButton
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_mylocation"
+                android:id="@+id/btn_my_location"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="8dp"
+                android:textOff=""
+                android:textOn=""
+                android:layout_marginBottom="72dp"
+                />
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_above="@id/btn_my_location"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_nav"
+                android:id="@+id/btn_nav"
+                android:clickable="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="8dp" />
+
+
 
         </com.congxiaoyao.xber_driver.widget.LoadingLayout>
 

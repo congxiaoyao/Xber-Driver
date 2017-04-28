@@ -1,20 +1,27 @@
 package com.congxiaoyao.xber_driver.login;
 
 import android.app.Activity;
+import android.util.Log;
 
 import com.congxiaoyao.httplib.request.LoginRequest;
+import com.congxiaoyao.httplib.request.UserRequest;
 import com.congxiaoyao.httplib.request.body.LoginBody;
 import com.congxiaoyao.httplib.request.retrofit2.XberRetrofit;
+import com.congxiaoyao.httplib.response.CarDetail;
 import com.congxiaoyao.httplib.response.LoginInfoResponse;
 import com.congxiaoyao.httplib.response.exception.LoginException;
 import com.congxiaoyao.xber_driver.Driver;
+import com.congxiaoyao.xber_driver.TAG;
 import com.congxiaoyao.xber_driver.mvpbase.presenter.BasePresenterImpl;
 import com.congxiaoyao.xber_driver.utils.Token;
-import com.congxiaoyao.xber_driver.Driver;
 
+import java.util.concurrent.TimeUnit;
+
+import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
 /**
@@ -53,26 +60,34 @@ public class LoginPresenterImpl extends BasePresenterImpl<LoginContract.View>
 
     @Override
     public void subscribe() {
+        final Driver driver = new Driver();
         LoginBody body = new LoginBody();
         body.setClientId(Token.getClientId(view.getContext()));
         body.setUsername(userName);
         body.setPassword(password);
         view.showLoading();
-        Subscription subscribe = XberRetrofit.create(LoginRequest.class).login(body).doOnNext(new Action1<LoginInfoResponse>() {
+        Subscription subscribe = XberRetrofit.create(LoginRequest.class).login(body).delay(1000, TimeUnit.MILLISECONDS).flatMap(new Func1<LoginInfoResponse, Observable<CarDetail>>() {
             @Override
-            public void call(LoginInfoResponse loginInfoResponse) {
-                Driver driver = new Driver();
+            public Observable<CarDetail> call(LoginInfoResponse loginInfoResponse) {
                 driver.setPassword(password);
                 driver.setNickName(loginInfoResponse.getName());
                 driver.setUserName(loginInfoResponse.getUsername());
                 Token.processTokenAndSave(view.getContext(), loginInfoResponse.getAuthToken());
                 driver.setUserId(loginInfoResponse.getUserId());
                 driver.setToken(Token.value);
-                driver.save(view.getContext());
+                return XberRetrofit.create(UserRequest.class).getCarInfoByUserId(loginInfoResponse.getUserId(),
+                        Token.value);
             }
-        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<LoginInfoResponse>() {
+
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Action1<CarDetail>() {
             @Override
-            public void call(LoginInfoResponse loginInfoResponse) {
+            public void call(CarDetail carDetail) {
+                driver.setCarId(carDetail.getCarId());
+                driver.setPlate(carDetail.getPlate());
+                driver.setSpec(carDetail.getSpec());
+                driver.setAge(carDetail.getUserInfo().getAge());
+                driver.setGender(carDetail.getUserInfo().getGender());
+                driver.save(view.getContext());
                 setLoginResult(LoginActivity.CODE_RESULT_SUCCESS);
                 view.showLoginSuccess();
                 ((Activity) view.getContext()).finish();
@@ -83,6 +98,7 @@ public class LoginPresenterImpl extends BasePresenterImpl<LoginContract.View>
                 exceptionDispatcher.dispatchException(throwable);
             }
         });
+
         subscriptions.add(subscribe);
     }
 
