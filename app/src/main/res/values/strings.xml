@@ -58,4 +58,14 @@
     <string name="change_to_traditional_tips">已切换为繁体，请在地图图层页看效果</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="send">发送</string>
+    <string name="not_connected">未连接</string>
+    <string name="connected">已连接</string>
+    <string name="connecting">正在连接</string>
+    <string name="please_add">请添加</string>
+    <string name="connect">连接</string>
+    <string name="cutdown">断开</string>
+    <string name="send_success">发送成功</string>
+    <string name="send_fail">发送失败</string>
 </resources>

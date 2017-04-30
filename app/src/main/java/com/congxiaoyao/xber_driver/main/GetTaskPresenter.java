@@ -1,14 +1,16 @@
 package com.congxiaoyao.xber_driver.main;
 
-import android.view.LayoutInflater;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.View;
 import android.widget.Toast;
 
+import com.congxiaoyao.httplib.NetWorkConfig;
 import com.congxiaoyao.httplib.request.TaskRequest;
 import com.congxiaoyao.httplib.request.retrofit2.XberRetrofit;
 import com.congxiaoyao.httplib.response.Task;
 import com.congxiaoyao.httplib.response.TaskListRsp;
-import com.congxiaoyao.xber_driver.R;
+import com.congxiaoyao.xber_driver.Driver;
 import com.congxiaoyao.xber_driver.mvpbase.presenter.BasePresenterImpl;
 import com.congxiaoyao.xber_driver.utils.Token;
 
@@ -66,7 +68,11 @@ public class GetTaskPresenter extends BasePresenterImpl<GetTaskContract.View>
                     public void call(TaskListRsp taskListRsp) {
                         if (taskListRsp.getCurrentPageData().size() == 0) {
                             view.showNoTask();
-                        }else {
+                            MainActivity context = ((MainActivity) view.getContext());
+                            LocalBroadcastManager.getInstance(context).registerReceiver(
+                                    context.getNewTaskReceiver(),
+                                    new IntentFilter(MainActivity.ACTION_NEW_TASK));
+                        } else {
                             view.showTask(taskListRsp.getTaskList().get(0));
                         }
                     }

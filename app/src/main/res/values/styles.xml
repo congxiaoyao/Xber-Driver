@@ -85,6 +85,10 @@
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
 
+    <style name="AppTheme.Tab" parent="TextAppearance.Design.Tab" >
+        <item name="textAllCaps">false</item>
+    </style>
+
     <style name="myActionButton" parent="Base.Widget.AppCompat.ActionButton">
         <item name="android:colorAccent">@color/colorPrimary</item>
     </style>

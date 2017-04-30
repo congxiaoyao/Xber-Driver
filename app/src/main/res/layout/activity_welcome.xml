@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.congxiaoyao.xber_driver.WelcomeActivity">
 
     <data >
 
@@ -8,12 +11,11 @@
             type="com.congxiaoyao.xber_driver.WelcomeActivity.Presenter" />
     </data>
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
+    <RelativeLayout
+        android:background="#fafafa"
         android:id="@+id/activity_welcome"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="com.congxiaoyao.xber_driver.WelcomeActivity">
+        android:layout_height="match_parent">
 
         <ImageView
             android:layout_width="72dp"

@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.ToolbarWidgetWrapper;
 import android.view.View;
+import android.widget.Toast;
 
 import com.congxiaoyao.location.utils.RoundList;
 import com.congxiaoyao.xber_driver.login.LoginActivity;
@@ -104,7 +105,7 @@ public class LoadableViewImpl<T extends BasePresenter> extends Fragment implemen
     }
 
     protected void onReLoginFailed() {
-
+        Toast.makeText(getContext(), "未登录", Toast.LENGTH_SHORT).show();
     }
 
     @Override

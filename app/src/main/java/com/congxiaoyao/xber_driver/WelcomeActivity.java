@@ -16,6 +16,7 @@ import com.congxiaoyao.xber_driver.login.LoginActivity;
 import com.congxiaoyao.xber_driver.main.MainActivity;
 import com.congxiaoyao.xber_driver.register.RegisterActivity;
 import com.congxiaoyao.xber_driver.utils.Token;
+import com.xiaomi.mipush.sdk.MiPushClient;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -25,12 +26,15 @@ import static android.os.Build.MANUFACTURER;
 public class WelcomeActivity extends AppCompatActivity {
 
     public static final int LOGIN_REQUEST_CODE = 100;
+    public static final String APP_ID = "2882303761517572334";
+    public static final String APP_KEY = "5701757238334";
     private ActivityWelcomeBinding binding;
 
     Runnable runnable = new Runnable() {
         @Override
         public void run() {
             SDKInitializer.initialize(getApplicationContext());
+            MiPushClient.registerPush(getApplicationContext(), APP_ID, APP_KEY);
             startActivity(new Intent(WelcomeActivity.this, MainActivity.class));
             finish();
             overridePendingTransition(0, 0);
@@ -46,11 +50,7 @@ public class WelcomeActivity extends AppCompatActivity {
         Driver driver = Driver.fromSharedPreference(this);
         if (driver != null) {
             binding.llContainer.setVisibility(View.GONE);
-            delayAndJump();
-//            if (Math.random() < 0.5) {
-//                getSharedPreferences("xber_sp", Context.MODE_PRIVATE)
-//                        .edit().putString("driver", null).apply();
-//            }
+            delayAndJump(500);
         }else {
             binding.setPresenter(new Presenter());
             showBottomBar();
@@ -72,8 +72,8 @@ public class WelcomeActivity extends AppCompatActivity {
 
     }
 
-    private void delayAndJump() {
-        binding.llContainer.postDelayed(runnable, 500);
+    private void delayAndJump(long delay) {
+        binding.llContainer.postDelayed(runnable, delay);
     }
 
     private void fitSystemBarTextColor() {
@@ -91,8 +91,7 @@ public class WelcomeActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == LOGIN_REQUEST_CODE && resultCode == LoginActivity.CODE_RESULT_SUCCESS) {
-            startActivity(new Intent(WelcomeActivity.this, MainActivity.class));
-            finish();
+            delayAndJump(0);
         }
     }
 

@@ -69,6 +69,8 @@ public class LocationService extends Service implements LocationTrace.Callback{
     private long taskId;
     private long carId;
 
+    private boolean shouldUpload = false;
+
     public static void startServiceForLocation(Context context) {
         Intent intent = new Intent(context, LocationService.class);
         intent.putExtra(COMMAND_KEY, COMMAND_LOCATION);
@@ -79,6 +81,12 @@ public class LocationService extends Service implements LocationTrace.Callback{
         Intent intent = new Intent(context, LocationService.class);
         intent.putExtra(COMMAND_KEY, COMMAND_UPLOAD);
         intent.putExtra(TASK_ID, taskId);
+        context.startService(intent);
+    }
+
+    public static void stopUploadService(Context context) {
+        Intent intent = new Intent(context, LocationService.class);
+        intent.putExtra(COMMAND_KEY, COMMAND_UPLOAD);
         context.startService(intent);
     }
 
@@ -101,7 +109,19 @@ public class LocationService extends Service implements LocationTrace.Callback{
         } else if (command == (COMMAND_UPLOAD)) {
             taskId = intent.getLongExtra(TASK_ID, -1);
             carId = Driver.fromSharedPreference(LocationService.this).getCarId();
-            if (taskId != -1) setupUploadClient();
+            //关闭stomp客户端
+            if (taskId == -1) {
+                shouldUpload = false;
+                if (client != null) {
+                    client.disconnect();
+                    client = null;
+                }
+            }
+            //开启stomp客户端
+            else {
+                shouldUpload = true;
+                setupUploadClient();
+            }
         }
         return START_STICKY;
     }
@@ -166,9 +186,9 @@ public class LocationService extends Service implements LocationTrace.Callback{
                         Log.d(TAG.ME, "WebSocket opened!");
                         break;
                     case CLOSED:
-                        sendError();
+                        if (shouldUpload) sendError();
                     case ERROR:
-                        sendError();
+                        if (shouldUpload) sendError();
                         break;
                 }
             }
@@ -221,7 +241,7 @@ public class LocationService extends Service implements LocationTrace.Callback{
             updateNotification(location);
 
             //上传或缓存数据
-            sendDataOrSave(location);
+            if (shouldUpload) sendDataOrSave(location);
         }
 
         private void updateNotification(BDLocation location) {
@@ -268,6 +288,8 @@ public class LocationService extends Service implements LocationTrace.Callback{
         Iterator<Position> iterator = positions.iterator();
         while (iterator.hasNext()) {
             Position position = iterator.next();
+            position.setHandled(1);
+            position.update(position.getDbId());
             GpsSample gpsSample = positionToGpsSimple(position);
             client.send(NetWorkConfig.UPLOAD_PATH,
                     GPSEncoding.encode(gpsSample.toByteArray())).subscribe();

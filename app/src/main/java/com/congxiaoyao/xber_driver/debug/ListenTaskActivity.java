@@ -19,6 +19,7 @@ public class ListenTaskActivity extends StompActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_listen_task);
+        setSupportActionBar(binding.toolbar);
         initStompClient();
     }
 

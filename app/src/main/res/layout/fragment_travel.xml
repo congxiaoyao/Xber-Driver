@@ -141,8 +141,11 @@
             android:layout_gravity="bottom"
             android:layout_margin="8dp"
             android:textSize="15sp"
+            android:id="@+id/button"
             android:onClick="@{presenter.onStartTravelClick}"
             android:layout_alignParentBottom="true"/>
+
+        <include layout="@layout/view_progress_bar" />
 
     </FrameLayout>
 </layout>

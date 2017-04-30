@@ -51,4 +51,5 @@ dependencies {
     compile 'net.orange-box.storebox:storebox-lib:1.4.0'
     compile 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.8.5'
     testCompile 'junit:junit:4.12'
+    compile files('libs/MiPush_SDK_Client_3_2_2.jar')
 }

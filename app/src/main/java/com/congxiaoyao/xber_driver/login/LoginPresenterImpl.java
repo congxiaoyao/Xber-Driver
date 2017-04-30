@@ -14,6 +14,7 @@ import com.congxiaoyao.xber_driver.Driver;
 import com.congxiaoyao.xber_driver.TAG;
 import com.congxiaoyao.xber_driver.mvpbase.presenter.BasePresenterImpl;
 import com.congxiaoyao.xber_driver.utils.Token;
+import com.xiaomi.mipush.sdk.MiPushClient;
 
 import java.util.concurrent.TimeUnit;
 
@@ -88,6 +89,7 @@ public class LoginPresenterImpl extends BasePresenterImpl<LoginContract.View>
                 driver.setAge(carDetail.getUserInfo().getAge());
                 driver.setGender(carDetail.getUserInfo().getGender());
                 driver.save(view.getContext());
+                MiPushClient.setUserAccount(view.getContext(), String.valueOf(driver.getUserId()), null);
                 setLoginResult(LoginActivity.CODE_RESULT_SUCCESS);
                 view.showLoginSuccess();
                 ((Activity) view.getContext()).finish();

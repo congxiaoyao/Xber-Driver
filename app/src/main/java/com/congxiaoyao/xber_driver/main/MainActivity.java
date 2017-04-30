@@ -1,6 +1,8 @@
 package com.congxiaoyao.xber_driver.main;
 
 import android.Manifest;
+import android.app.ActivityManager;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,12 +11,19 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.ToolbarWidgetWrapper;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,21 +37,27 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.UiSettings;
 import com.congxiaoyao.httplib.response.Spot;
 import com.congxiaoyao.httplib.response.TaskRsp;
+import com.congxiaoyao.location.utils.RoundList;
 import com.congxiaoyao.xber_driver.Driver;
 import com.congxiaoyao.xber_driver.R;
 import com.congxiaoyao.xber_driver.WelcomeActivity;
 import com.congxiaoyao.xber_driver.databinding.ActivityMainBinding;
+import com.congxiaoyao.xber_driver.debug.StompDebugActivity;
 import com.congxiaoyao.xber_driver.driverdetail.DriverDetailActivity;
 import com.congxiaoyao.xber_driver.location.LocationService;
 import com.congxiaoyao.xber_driver.nav.NavBaseActivity;
 import com.congxiaoyao.xber_driver.utils.BaiduMapUtils;
 import com.congxiaoyao.xber_driver.utils.Token;
 import com.congxiaoyao.xber_driver.widget.LoadingLayout;
+import com.xiaomi.mipush.sdk.MiPushClient;
+
+import java.lang.reflect.Field;
 
 import static com.congxiaoyao.xber_driver.location.LocationService.ACTION_ERROR;
 import static com.congxiaoyao.xber_driver.location.LocationService.ACTION_LOCATION;
@@ -52,6 +67,7 @@ import static com.congxiaoyao.xber_driver.login.LoginActivity.CODE_RESULT_SUCCES
 
 public class MainActivity extends NavBaseActivity implements GetTaskContract.View {
 
+    public static final String ACTION_NEW_TASK = "ACTION_NEW_TASK";
     private ActivityMainBinding binding;
     private GetTaskContract.Presenter presenter;
     private Driver driver;
@@ -61,6 +77,11 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
 
     private TaskRsp taskRsp;
 
+    private TravelFragment travelFragment;
+
+    private ProgressDialog initMapDialog;
+    private AlertDialog restartDialog;
+
     private Runnable restartRunnable = new Runnable() {
         @Override
         public void run() {
@@ -68,7 +89,6 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
             startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
         }
     };
-
     private BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -76,11 +96,23 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
             if (binding.btnMyLocation.isChecked()) showLocation(lastLocation);
         }
     };
-
     private BroadcastReceiver errorReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (restartDialog != null) return;
+            beep();
+            startActivity(new Intent(MainActivity.this, MainActivity.class));
             showRestartDialog("抱歉", "上传位置发生错误,请重启软件");
+            LocalBroadcastManager.getInstance(MainActivity.this).unregisterReceiver(errorReceiver);
+        }
+    };
+
+    private BroadcastReceiver newTaskReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            beep();
+            presenter.subscribe();
+            LocalBroadcastManager.getInstance(MainActivity.this).unregisterReceiver(newTaskReceiver);
         }
     };
 
@@ -89,6 +121,8 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
         super.onCreate(savedInstanceState);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         configBaiduMap(binding.mapView.getMap());
+        MiPushClient.clearNotification(this);
+        SDKInitializer.initialize(getApplicationContext());
         driver = Driver.fromSharedPreference(this);
         if (driver == null) {
             showRestartDialog("错误", "请重启软件");
@@ -120,7 +154,11 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
                 Spot spot = new Spot(-1L, "当前位置", lastLocation.getLatitude(),
                         lastLocation.getLongitude());
                 startNav(spot, taskRsp.getEndSpot());
-                Toast.makeText(MainActivity.this, "正在初始化导航引擎", Toast.LENGTH_SHORT).show();
+                initMapDialog = new ProgressDialog(MainActivity.this);
+                initMapDialog.setTitle("请稍后");
+                initMapDialog.setMessage("正在初始化导航");
+                initMapDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                initMapDialog.show();
             }
         });
 
@@ -131,6 +169,36 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
 
         queryLocationAndShow();
         startService();
+        listenToolbarDoubleClick();
+    }
+
+    protected void listenToolbarDoubleClick() {
+        final RoundList<Long> record = new RoundList<>(2);
+        AppCompatActivity activity = (AppCompatActivity) getContext();
+        ActionBar supportActionBar = activity.getSupportActionBar();
+        Class<? extends ActionBar> clz = supportActionBar.getClass();
+        if (!clz.getSimpleName().equals("ToolbarActionBar")) return;
+        try {
+            Field field = clz.getDeclaredField("mDecorToolbar");
+            field.setAccessible(true);
+            ToolbarWidgetWrapper toolbarWrapper = (ToolbarWidgetWrapper) field.get(supportActionBar);
+            field = toolbarWrapper.getClass().getDeclaredField("mToolbar");
+            field.setAccessible(true);
+            Toolbar toolbar = (Toolbar) field.get(toolbarWrapper);
+            toolbar.setClickable(true);
+            toolbar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    record.add(System.currentTimeMillis());
+                    if (record.size() == 2 && record.get(1) - record.get(0) < 500) {
+                        startActivity(new Intent(MainActivity.this, StompDebugActivity.class));
+                        record.removeAll();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void startService() {
@@ -204,8 +272,9 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
     }
 
     private void showRestartDialog(String title, String message) {
+        if (restartDialog != null) return;
         binding.tvTitle.setText("发生了一些错误");
-        new AlertDialog.Builder(this)
+        restartDialog = new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(message)
                 .setNegativeButton("好吧", new DialogInterface.OnClickListener() {
@@ -292,6 +361,10 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
     protected void onResume() {
         super.onResume();
         binding.mapView.onResume();
+        if (initMapDialog != null) {
+            initMapDialog.dismiss();
+            initMapDialog = null;
+        }
     }
 
     @Override
@@ -302,7 +375,8 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+        unregisterReceiver();
+        stopService();
         binding.mapView.onDestroy();
         if (presenter != null) {
             presenter.unSubscribe();
@@ -311,9 +385,19 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
             locationClient.stop();
             locationClient = null;
         }
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(locationReceiver);
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(errorReceiver);
+        NotificationManagerCompat.from(this).cancel(LocationService.NOTIFICATION_ID);
+        super.onDestroy();
+    }
+
+    private void stopService() {
         stopService(new Intent(this, LocationService.class));
+    }
+
+    private void unregisterReceiver() {
+        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        broadcastManager.unregisterReceiver(locationReceiver);
+        broadcastManager.unregisterReceiver(errorReceiver);
+        broadcastManager.unregisterReceiver(newTaskReceiver);
     }
 
     private void configBaiduMap(final BaiduMap baiduMap) {
@@ -335,6 +419,7 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
         });
     }
 
+
     @Override
     public void showLoading() {
         binding.loadingView.showLoading();
@@ -348,7 +433,6 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
     @Override
     public void setPresenter(GetTaskContract.Presenter presenter) {
         this.presenter = presenter;
-
     }
 
     @Override
@@ -361,23 +445,23 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
         return driver;
     }
 
+
     @Override
     public void showTask(TaskRsp taskRsp) {
         this.taskRsp = taskRsp;
         binding.loadingView.hideLoading();
-        TravelFragment fragment = TravelFragment.getInstance(taskRsp);
+        travelFragment = TravelFragment.getInstance(taskRsp);
+        new TravelPresenter(travelFragment);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.ff_container, fragment)
+                .replace(R.id.ff_container, travelFragment)
                 .commit();
     }
 
     @Override
     public void showReload() {
         binding.loadingView.hideLoading();
-        View view = getLayoutInflater().inflate(R.layout.view_no_task, binding.loadingView, true);
-        TextView hint = (TextView) view.findViewById(R.id.tv_hint);
-        hint.setText("点击重试");
-        hint.setOnClickListener(new View.OnClickListener() {
+        View view = getLayoutInflater().inflate(R.layout.view_retry_task, binding.loadingView, true);
+        view.findViewById(R.id.ll_hint).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 presenter.subscribe();
@@ -388,7 +472,14 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
     @Override
     public void showNoTask() {
         binding.loadingView.hideLoading();
-        getLayoutInflater().inflate(R.layout.view_no_task, binding.loadingView, true);
+        View view = getLayoutInflater().inflate(R.layout.view_retry_task, binding.loadingView, true);
+        ((TextView) view.findViewById(R.id.tv_hint)).setText("暂无任务");
+        view.findViewById(R.id.ll_hint).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presenter.subscribe();
+            }
+        });
     }
 
     @Override
@@ -406,6 +497,26 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
         if (resultCode == CODE_RESULT_SUCCESS) {
             presenter.subscribe();
         }
+    }
+
+    public BroadcastReceiver getNewTaskReceiver() {
+        return newTaskReceiver;
+    }
+
+    private void beep() {
+        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        RingtoneManager.getRingtone(MainActivity.this, uri).play();
+    }
+
+    public BDLocation getLastLocation() {
+        return lastLocation;
+    }
+
+    public void reRequestTask() {
+        if (travelFragment != null) {
+            getSupportFragmentManager().beginTransaction().remove(travelFragment).commit();
+        }
+        presenter.subscribe();
     }
 }
 

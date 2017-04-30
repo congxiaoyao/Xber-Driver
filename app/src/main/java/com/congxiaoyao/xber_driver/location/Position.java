@@ -85,6 +85,10 @@ public class Position extends DataSupport {
         return handled;
     }
 
+    public long getDbId() {
+        return getBaseObjId();
+    }
+
     @Override
     public String toString() {
         return "Position{" +

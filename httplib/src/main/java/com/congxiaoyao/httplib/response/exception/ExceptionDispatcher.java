@@ -53,6 +53,7 @@ public class ExceptionDispatcher {
                     exceptionHandler.unKnowError(throwable);
                     return;
             }
+            exceptionHandler.onNetworkError(new NetWorkException(throwable.getMessage()));
         }
 
         //如果网络超时

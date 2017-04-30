@@ -4,6 +4,7 @@ import com.congxiaoyao.httplib.request.body.LaunchTaskRequest;
 import com.congxiaoyao.httplib.request.body.StatusChangeRequest;
 import com.congxiaoyao.httplib.response.GpsSamplePo;
 import com.congxiaoyao.httplib.response.TaskListRsp;
+import com.congxiaoyao.httplib.response.TaskRsp;
 
 import okhttp3.ResponseBody;
 import retrofit2.http.*;
@@ -33,6 +34,10 @@ public interface TaskRequest {
     @PUT("task/status")
     Observable<String> changeTaskStatus(@Body StatusChangeRequest request,
                                         @Header("Authorization") String token);
+
+    @GET("task/{taskId}")
+    Observable<TaskRsp> getTask(@Path("taskId") String taskId,
+                                @Header("Authorization") String token);
 
     /**
      * 获取任务列表
@@ -72,4 +77,14 @@ public interface TaskRequest {
     @GET(value = "task/trace/bytes")
     Observable<ResponseBody> getCarTraceBytes(@Query("taskId") Long taskId,
                                               @Header("Authorization") String token);
+
+    /**
+     * 获取任务的最后一个位置
+     *
+     * @param taskId
+     * @return
+     */
+    @GET(value = "task/last")
+    public Observable<GpsSamplePo> getLastPosition(@Query("taskId") Long taskId,
+                                       @Header("Authorization") String token);
 }
