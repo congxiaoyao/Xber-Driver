@@ -28,5 +28,19 @@
             android:layout_height="match_parent"
             android:id="@+id/content_textView" />
 
+        <com.congxiaoyao.xber_driver.widget.XberDividerLayout
+            android:layout_below="@id/appbar"
+            android:layout_width="match_parent"
+            app:divider_color="@color/colorDarkRed"
+            android:orientation="vertical"
+            app:divider_size="1dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                app:divider_bottom="true"
+                android:layout_width="match_parent"
+                android:layout_height="48dp" />
+        </com.congxiaoyao.xber_driver.widget.XberDividerLayout>
+
     </RelativeLayout>
 </layout>

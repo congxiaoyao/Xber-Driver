@@ -90,4 +90,19 @@ public class User {
     public void setUserType(Byte userType) {
         this.userType = userType;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userId=" + userId +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", salt='" + salt + '\'' +
+                ", name='" + name + '\'' +
+                ", gender=" + gender +
+                ", avatar='" + avatar + '\'' +
+                ", age=" + age +
+                ", userType=" + userType +
+                '}';
+    }
 }

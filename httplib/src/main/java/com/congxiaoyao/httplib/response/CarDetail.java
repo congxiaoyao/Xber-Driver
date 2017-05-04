@@ -42,6 +42,22 @@ public class CarDetail {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CarDetail carDetail = (CarDetail) o;
+
+        return carId.equals(carDetail.carId);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return carId.hashCode();
+    }
+
+    @Override
     public String toString() {
         return "CarDetail{" +
                 "carId=" + carId +

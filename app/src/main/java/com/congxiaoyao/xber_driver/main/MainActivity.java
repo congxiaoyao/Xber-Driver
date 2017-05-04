@@ -1,15 +1,16 @@
 package com.congxiaoyao.xber_driver.main;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.databinding.DataBindingUtil;
+import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -24,6 +25,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.ToolbarWidgetWrapper;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,12 +48,16 @@ import com.congxiaoyao.httplib.response.TaskRsp;
 import com.congxiaoyao.location.utils.RoundList;
 import com.congxiaoyao.xber_driver.Driver;
 import com.congxiaoyao.xber_driver.R;
+import com.congxiaoyao.xber_driver.TAG;
 import com.congxiaoyao.xber_driver.WelcomeActivity;
 import com.congxiaoyao.xber_driver.databinding.ActivityMainBinding;
+import com.congxiaoyao.xber_driver.debug.StompActivity;
 import com.congxiaoyao.xber_driver.debug.StompDebugActivity;
+import com.congxiaoyao.xber_driver.debug.UploadActivity;
 import com.congxiaoyao.xber_driver.driverdetail.DriverDetailActivity;
 import com.congxiaoyao.xber_driver.location.LocationService;
 import com.congxiaoyao.xber_driver.nav.NavBaseActivity;
+import com.congxiaoyao.xber_driver.simulatepost.SimulatePostActivity;
 import com.congxiaoyao.xber_driver.utils.BaiduMapUtils;
 import com.congxiaoyao.xber_driver.utils.Token;
 import com.congxiaoyao.xber_driver.widget.LoadingLayout;
@@ -162,6 +168,28 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
             }
         });
 
+        binding.btnLogo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Object tag = v.getTag();
+                if (tag == null) {
+                    final RoundList<Long> record = new RoundList<>(4);
+                    record.add(System.currentTimeMillis());
+                    v.setTag(record);
+                    return;
+                }
+                RoundList<Long> record = (RoundList<Long>) tag;
+                record.add(System.currentTimeMillis());
+                long l = record.getLast() - record.getFirst();
+                if (record.size() == 4 && l < 1000) {
+                    finish();
+                    startActivity(new Intent(MainActivity.this, SimulatePostActivity.class));
+                    record.removeAll();
+                    return;
+                }
+            }
+        });
+
         Token.value = driver.getToken();
         GetTaskPresenter presenter = new GetTaskPresenter(this);
         binding.loadingView.below(16);
@@ -169,7 +197,7 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
 
         queryLocationAndShow();
         startService();
-        listenToolbarDoubleClick();
+//        listenToolbarDoubleClick();
     }
 
     protected void listenToolbarDoubleClick() {
@@ -308,7 +336,11 @@ public class MainActivity extends NavBaseActivity implements GetTaskContract.Vie
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_setting:
-
+                SharedPreferences xber_sp = getSharedPreferences("xber_sp", Context.MODE_PRIVATE);
+                SharedPreferences.Editor edit = xber_sp.edit();
+                edit.putString("driver", null);
+                edit.apply();
+                restartRunnable.run();
                 break;
             case R.id.menu_driver_info:
                 startActivity(new Intent(this, DriverDetailActivity.class));

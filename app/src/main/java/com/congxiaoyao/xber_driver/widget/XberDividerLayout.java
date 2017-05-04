@@ -68,7 +68,7 @@ public class XberDividerLayout extends LinearLayout {
                 }
             });
         }
-
+        setWillNotDraw(false);
     }
 
     @Override

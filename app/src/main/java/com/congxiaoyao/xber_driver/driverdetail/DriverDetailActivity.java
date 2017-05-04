@@ -26,7 +26,6 @@ import me.imid.swipebacklayout.lib.app.SwipeBackActivity;
 
 public class DriverDetailActivity extends SwipeBackActivity implements CollapsibleHeader {
 
-    private CarDetailParcel parcel;
     private ActivityDriverDetailBinding binding;
     private Drawable shadow;
 
@@ -63,10 +62,7 @@ public class DriverDetailActivity extends SwipeBackActivity implements Collapsib
         binding.imgAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences xber_sp = getSharedPreferences("xber_sp", Context.MODE_PRIVATE);
-                SharedPreferences.Editor edit = xber_sp.edit();
-                edit.putString("driver", null);
-                edit.apply();
+
             }
         });
     }

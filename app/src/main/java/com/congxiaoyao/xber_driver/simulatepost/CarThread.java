@@ -3,14 +3,19 @@ package com.congxiaoyao.xber_driver.simulatepost;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.util.Log;
 
 import com.congxiaoyao.httplib.NetWorkConfig;
 import com.congxiaoyao.stopmlib.client.StompClient;
 import com.congxiaoyao.location.utils.GPSEncoding;
 import com.congxiaoyao.location.utils.GpsUtils;
+import com.congxiaoyao.xber_driver.TAG;
+import com.congxiaoyao.xber_driver.main.MainActivity;
 
 import org.litepal.crud.DataSupport;
 
@@ -151,8 +156,9 @@ public class CarThread extends HandlerThread {
             vLat = 0;
             vLng = 0;
         } else {
-            speed = Math.random() * 5 + 27;
+            speed = Math.random() * 6 + 27;
             time = distance / speed;
+            Log.d(TAG.ME, "sendLocBeanToServer: time =" + time);
             vLat = (next.lat - now.lat) / time;
             vLng = (next.lng - now.lng) / time;
         }
